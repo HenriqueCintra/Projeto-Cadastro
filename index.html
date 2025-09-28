@@ -260,40 +260,21 @@
                 <form id="cadastro-form" class="cadastro-form">
                   <div class="form-row">
                     <div class="form-group">
-                      <label for="nome" class="form-label"
-                        >Nome Completo *</label
-                      >
-                      <input
-                        type="text"
-                        id="nome"
-                        class="form-control"
-                        required
-                      />
+                      <label for="nome" class="form-label">Nome Completo</label>
+                      <input type="text" id="nome" class="form-control" />
                     </div>
                     <div class="form-group">
-                      <label for="documento" class="form-label"
-                        >CPF/CNPJ *</label
-                      >
-                      <input
-                        type="text"
-                        id="documento"
-                        class="form-control"
-                        required
-                      />
+                      <label for="documento" class="form-label">CPF/CNPJ</label>
+                      <input type="text" id="documento" class="form-control" />
                     </div>
                   </div>
 
                   <div class="form-row">
                     <div class="form-group">
                       <label for="telefone" class="form-label"
-                        >Telefone/WhatsApp *</label
+                        >Telefone/WhatsApp</label
                       >
-                      <input
-                        type="tel"
-                        id="telefone"
-                        class="form-control"
-                        required
-                      />
+                      <input type="tel" id="telefone" class="form-control" />
                     </div>
                     <div class="form-group">
                       <label for="email" class="form-label">Email</label>
@@ -304,9 +285,9 @@
                   <div class="form-row">
                     <div class="form-group">
                       <label for="tipo" class="form-label"
-                        >Tipo de Beneficiário *</label
+                        >Tipo de Beneficiário</label
                       >
-                      <select id="tipo" class="form-control" required>
+                      <select id="tipo" class="form-control">
                         <option value="">Selecione o tipo</option>
                         <option value="Agricultor Individual">
                           Agricultor Individual
@@ -327,10 +308,8 @@
                       </select>
                     </div>
                     <div class="form-group">
-                      <label for="renda" class="form-label"
-                        >Renda Mensal *</label
-                      >
-                      <select id="renda" class="form-control" required>
+                      <label for="renda" class="form-label">Renda Mensal</label>
+                      <select id="renda" class="form-control">
                         <option value="">Selecione a faixa</option>
                         <option value="até 1 SM">até 1 SM</option>
                         <option value="1-2 SM">1-2 SM</option>
@@ -342,240 +321,192 @@
 
                   <div class="form-group">
                     <label for="endereco" class="form-label"
-                      >Endereço Completo *</label
+                      >Endereço Completo</label
                     >
                     <input
                       type="text"
                       id="endereco"
                       class="form-control"
                       placeholder="Rua, número, bairro, cidade, estado"
-                      required
                     />
                   </div>
 
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="latitude" class="form-label">Latitude</label>
-                      <input
-                        type="number"
-                        id="latitude"
-                        class="form-control"
-                        step="any"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="longitude" class="form-label"
-                        >Longitude</label
-                      >
-                      <input
-                        type="number"
-                        id="longitude"
-                        class="form-control"
-                        step="any"
-                      />
-                    </div>
+                  <div class="form-group">
+                    <button
+                      type="button"
+                      id="get-location-btn-cadastro"
+                      class="btn btn--secondary"
+                    >
+                      📍 Obter Localização GPS
+                    </button>
+                    <input type="hidden" id="latitude" />
+                    <input type="hidden" id="longitude" />
+                    <p id="location-status-cadastro" class="mt-2"></p>
                   </div>
 
                   <div class="form-row">
                     <div class="form-group">
                       <label for="area_cultivada" class="form-label"
-                        >Área Cultivada (hectares) *</label
+                        >Área Cultivada (hectares)</label
                       >
                       <input
                         type="number"
                         id="area_cultivada"
                         class="form-control"
                         step="0.1"
-                        required
                       />
                     </div>
                     <div class="form-group">
                       <label for="pessoas_familia" class="form-label"
-                        >Pessoas na Família/Associação *</label
+                        >Pessoas na Família/Associação</label
                       >
                       <input
                         type="number"
                         id="pessoas_familia"
                         class="form-control"
-                        required
                       />
                     </div>
                   </div>
 
-                  <div class="cultures-section">
-                    <h4 class="cultures-title">🌱 Culturas Cultivadas</h4>
-                    <p class="cultures-subtitle">
-                      Selecione as culturas que são cultivadas (pelo menos uma
-                      obrigatória)
-                    </p>
-
-                    <div class="cultures-grid">
-                      <div class="culture-item">
-                        <label class="culture-checkbox">
-                          <input
-                            type="checkbox"
-                            name="culturas"
-                            value="Batata-doce"
-                            id="cultura-batata-doce"
-                          />
-                          <span class="culture-icon">🍠</span>
-                          <span class="culture-name">Batata-doce</span>
-                        </label>
-                      </div>
-                      <div class="culture-item">
-                        <label class="culture-checkbox">
-                          <input
-                            type="checkbox"
-                            name="culturas"
-                            value="Macaxeira"
-                            id="cultura-macaxeira"
-                          />
-                          <span class="culture-icon">🌿</span>
-                          <span class="culture-name">Macaxeira</span>
-                        </label>
-                      </div>
-                      <div class="culture-item">
-                        <label class="culture-checkbox">
-                          <input
-                            type="checkbox"
-                            name="culturas"
-                            value="Milho"
-                            id="cultura-milho"
-                          />
-                          <span class="culture-icon">🌽</span>
-                          <span class="culture-name">Milho</span>
-                        </label>
-                      </div>
-                      <div class="culture-item">
-                        <label class="culture-checkbox">
-                          <input
-                            type="checkbox"
-                            name="culturas"
-                            value="Feijão caupi"
-                            id="cultura-feijao-caupi"
-                          />
-                          <span class="culture-icon">🫘</span>
-                          <span class="culture-name">Feijão caupi</span>
-                        </label>
-                      </div>
-                      <div class="culture-item">
-                        <label class="culture-checkbox">
-                          <input
-                            type="checkbox"
-                            name="culturas"
-                            value="Abóbora"
-                            id="cultura-abobora"
-                          />
-                          <span class="culture-icon">🎃</span>
-                          <span class="culture-name">Abóbora</span>
-                        </label>
-                      </div>
+                  <div class="form-group">
+                    <label class="form-label">Culturas Cultivadas</label>
+                    <div class="choice-grid">
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
+                          name="culturas"
+                          value="Batata-doce"
+                        />
+                        Batata-doce
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
+                          name="culturas"
+                          value="Macaxeira"
+                        />
+                        Macaxeira
+                      </label>
+                      <label class="choice-label">
+                        <input type="checkbox" name="culturas" value="Milho" />
+                        Milho
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
+                          name="culturas"
+                          value="Feijão caupi"
+                        />
+                        Feijão caupi
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
+                          name="culturas"
+                          value="Abóbora"
+                        />
+                        Abóbora
+                      </label>
                     </div>
+                  </div>
 
-                    <div class="varieties-section">
-                      <div
-                        class="variety-field hidden"
-                        id="variedades-batata-doce"
+                  <div class="varieties-section">
+                    <div
+                      class="variety-field hidden"
+                      id="variedades-batata-doce"
+                    >
+                      <label
+                        for="variedades-input-batata-doce"
+                        class="form-label"
+                        >Variedades de Batata-doce</label
                       >
-                        <label
-                          for="variedades-input-batata-doce"
-                          class="form-label"
-                          >Variedades de Batata-doce *</label
-                        >
-                        <input
-                          type="text"
-                          id="variedades-input-batata-doce"
-                          class="form-control"
-                          placeholder="Ex: Americana, Beauregard, CNPH 1205"
-                        />
-                        <small class="form-help"
-                          >Informe as variedades cultivadas, separadas por
-                          vírgula</small
-                        >
-                      </div>
-                      <div
-                        class="variety-field hidden"
-                        id="variedades-macaxeira"
+                      <input
+                        type="text"
+                        id="variedades-input-batata-doce"
+                        class="form-control"
+                        placeholder="Ex: Americana, Beauregard, CNPH 1205"
+                      />
+                      <small class="form-help"
+                        >Informe as variedades cultivadas, separadas por
+                        vírgula</small
                       >
-                        <label
-                          for="variedades-input-macaxeira"
-                          class="form-label"
-                          >Variedades de Macaxeira *</label
-                        >
-                        <input
-                          type="text"
-                          id="variedades-input-macaxeira"
-                          class="form-control"
-                          placeholder="Ex: Rosinha, Manipeba, IAC 576-70"
-                        />
-                        <small class="form-help"
-                          >Informe as variedades cultivadas, separadas por
-                          vírgula</small
-                        >
-                      </div>
-                      <div class="variety-field hidden" id="variedades-milho">
-                        <label for="variedades-input-milho" class="form-label"
-                          >Variedades de Milho *</label
-                        >
-                        <input
-                          type="text"
-                          id="variedades-input-milho"
-                          class="form-control"
-                          placeholder="Ex: BR 206, AL Bandeirantes, AG 1051"
-                        />
-                        <small class="form-help"
-                          >Informe as variedades cultivadas, separadas por
-                          vírgula</small
-                        >
-                      </div>
-                      <div
-                        class="variety-field hidden"
-                        id="variedades-feijao-caupi"
+                    </div>
+                    <div class="variety-field hidden" id="variedades-macaxeira">
+                      <label for="variedades-input-macaxeira" class="form-label"
+                        >Variedades de Macaxeira</label
                       >
-                        <label
-                          for="variedades-input-feijao-caupi"
-                          class="form-label"
-                          >Variedades de Feijão caupi *</label
-                        >
-                        <input
-                          type="text"
-                          id="variedades-input-feijao-caupi"
-                          class="form-control"
-                          placeholder="Ex: BRS Guariba, BRS Pajeú, BRS Tumucumaque"
-                        />
-                        <small class="form-help"
-                          >Informe as variedades cultivadas, separadas por
-                          vírgula</small
-                        >
-                      </div>
-                      <div class="variety-field hidden" id="variedades-abobora">
-                        <label for="variedades-input-abobora" class="form-label"
-                          >Variedades de Abóbora *</label
-                        >
-                        <input
-                          type="text"
-                          id="variedades-input-abobora"
-                          class="form-control"
-                          placeholder="Ex: Menina Brasileira, Jacaré, Sergipana"
-                        />
-                        <small class="form-help"
-                          >Informe as variedades cultivadas, separadas por
-                          vírgula</small
-                        >
-                      </div>
+                      <input
+                        type="text"
+                        id="variedades-input-macaxeira"
+                        class="form-control"
+                        placeholder="Ex: Rosinha, Manipeba, IAC 576-70"
+                      />
+                      <small class="form-help"
+                        >Informe as variedades cultivadas, separadas por
+                        vírgula</small
+                      >
+                    </div>
+                    <div class="variety-field hidden" id="variedades-milho">
+                      <label for="variedades-input-milho" class="form-label"
+                        >Variedades de Milho</label
+                      >
+                      <input
+                        type="text"
+                        id="variedades-input-milho"
+                        class="form-control"
+                        placeholder="Ex: BR 206, AL Bandeirantes, AG 1051"
+                      />
+                      <small class="form-help"
+                        >Informe as variedades cultivadas, separadas por
+                        vírgula</small
+                      >
+                    </div>
+                    <div
+                      class="variety-field hidden"
+                      id="variedades-feijao-caupi"
+                    >
+                      <label
+                        for="variedades-input-feijao-caupi"
+                        class="form-label"
+                        >Variedades de Feijão caupi</label
+                      >
+                      <input
+                        type="text"
+                        id="variedades-input-feijao-caupi"
+                        class="form-control"
+                        placeholder="Ex: BRS Guariba, BRS Pajeú, BRS Tumucumaque"
+                      />
+                      <small class="form-help"
+                        >Informe as variedades cultivadas, separadas por
+                        vírgula</small
+                      >
+                    </div>
+                    <div class="variety-field hidden" id="variedades-abobora">
+                      <label for="variedades-input-abobora" class="form-label"
+                        >Variedades de Abóbora</label
+                      >
+                      <input
+                        type="text"
+                        id="variedades-input-abobora"
+                        class="form-control"
+                        placeholder="Ex: Menina Brasileira, Jacaré, Sergipana"
+                      />
+                      <small class="form-help"
+                        >Informe as variedades cultivadas, separadas por
+                        vírgula</small
+                      >
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label for="acesso_agua" class="form-label"
-                      >Acesso à Água *</label
+                      >Acesso à Água</label
                     >
                     <input
                       type="text"
                       id="acesso_agua"
                       class="form-control"
                       placeholder="Ex: Sim - Poço artesiano"
-                      required
                     />
                   </div>
 
@@ -683,44 +614,46 @@
 
                   <div class="form-group">
                     <label class="form-label">Tipo de Doação *</label>
-                    <div class="d-flex" style="gap: 1rem">
-                      <label
-                        ><input
-                          type="radio"
+                    <div class="choice-grid" id="donation-type-grid">
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
                           name="donation-type"
                           value="muda"
-                          required
                         />
-                        Muda</label
-                      >
-                      <label
-                        ><input
-                          type="radio"
+                        Muda
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
                           name="donation-type"
                           value="semente"
                         />
-                        Semente</label
-                      >
-                      <label
-                        ><input
-                          type="radio"
+                        Semente
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
                           name="donation-type"
                           value="maniva"
                         />
-                        Maniva</label
-                      >
-                      <label
-                        ><input
-                          type="radio"
+                        Maniva
+                      </label>
+                      <label class="choice-label">
+                        <input
+                          type="checkbox"
                           name="donation-type"
                           value="alimento"
                         />
-                        Alimento</label
-                      >
+                        Alimento
+                      </label>
                     </div>
                   </div>
 
-                  <div id="donation-items" class="hidden"></div>
+                  <div id="donation-items" class="form-group hidden">
+                    <label class="form-label">Item(s) *</label>
+                    <div class="choice-grid" id="donation-item-grid"></div>
+                  </div>
 
                   <div class="form-group">
                     <label for="quantity" class="form-label"
@@ -733,19 +666,6 @@
                       step="0.1"
                       required
                     />
-                  </div>
-
-                  <div class="form-group">
-                    <button
-                      type="button"
-                      id="get-location-btn"
-                      class="btn btn--secondary"
-                    >
-                      📍 Obter Localização GPS
-                    </button>
-                    <input type="hidden" id="donation-latitude" />
-                    <input type="hidden" id="donation-longitude" />
-                    <p id="location-status" class="mt-2"></p>
                   </div>
 
                   <div class="form-actions">

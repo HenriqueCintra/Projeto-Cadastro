@@ -1036,94 +1036,35 @@ select.form-control {
   width: 100%;
 }
 
-/* Seção de Culturas (Nova) */
-.cultures-section {
-  background: var(--color-bg-3);
-  padding: var(--space-24);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-success);
-  margin: var(--space-24) 0;
-}
-
-.cultures-title {
-  color: var(--color-success);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  margin: 0 0 var(--space-8) 0;
+/* Seção de Culturas e Doações com novo estilo */
+.choice-grid {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-8);
 }
 
-.cultures-subtitle {
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-20) 0;
-  font-size: var(--font-size-sm);
-}
-
-.cultures-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-16);
-  margin-bottom: var(--space-20);
-}
-
-.culture-item {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  border: 2px solid var(--color-border);
-  transition: all var(--duration-fast) var(--ease-standard);
-}
-
-.culture-item:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.culture-checkbox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+.choice-label {
+  display: inline-block;
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  padding: var(--space-16);
-  gap: var(--space-8);
-  width: 100%;
+  transition: all var(--duration-fast) ease-in-out;
+  background-color: var(--color-surface);
 }
 
-.culture-checkbox input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+.choice-label input[type="checkbox"] {
+  display: none;
 }
 
-.culture-icon {
-  font-size: 2.5rem;
-  transition: transform var(--duration-fast) var(--ease-standard);
-}
-
-.culture-name {
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
-  font-size: var(--font-size-sm);
-}
-
-.culture-checkbox input[type="checkbox"]:checked + .culture-icon {
-  transform: scale(1.1);
-}
-
-.culture-checkbox input[type="checkbox"]:checked ~ .culture-name {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-}
-
-.culture-item:has(input[type="checkbox"]:checked) {
-  background: var(--color-bg-1);
+.choice-label:has(input:checked) {
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--color-teal-500-rgb), 0.2);
+}
+
+.choice-label:hover {
+  border-color: var(--color-primary-hover);
 }
 
 /* Seção de Variedades */
