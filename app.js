@@ -4,7 +4,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCNRPBXsZKe9EGWYA5S0zoXQtYsyAIs3NA",
   authDomain: "bd-cadastro-f43a1.firebaseapp.com",
   projectId: "bd-cadastro-f43a1",
-  storageBucket: "bd-cadastro-f43a1.appspot.com",
+  storageBucket: "bd-cadastro-f43a1.firebasestorage.app",
   messagingSenderId: "798258380781",
   appId: "1:798258380781:web:294bca7733ce029981b1e4",
   measurementId: "G-J7GH724JS2",
