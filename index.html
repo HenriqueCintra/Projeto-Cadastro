@@ -63,6 +63,9 @@
             <button class="nav-btn" data-screen="cadastro" id="nav-cadastro">
               Novo Cadastro
             </button>
+            <button class="nav-btn" data-screen="donations" id="nav-donations">
+              Doações
+            </button>
             <button
               class="nav-btn"
               data-screen="relatorios"
@@ -226,6 +229,7 @@
             <button class="nav-btn active" data-screen="cadastro">
               Novo Cadastro
             </button>
+            <button class="nav-btn" data-screen="donations">Doações</button>
             <button
               class="nav-btn"
               data-screen="relatorios"
@@ -620,6 +624,164 @@
       </main>
     </div>
 
+    <div id="donations-screen" class="screen hidden">
+      <nav class="navbar">
+        <div class="nav-container">
+          <h2 class="nav-title">🍠 Nas Ramas da Esperança</h2>
+          <div class="nav-user-info">
+            <span class="user-badge" id="user-badge-donations">Admin</span>
+            <span class="user-name" id="user-name-donations"
+              >Administrador</span
+            >
+          </div>
+          <div class="nav-menu">
+            <button class="nav-btn" data-screen="dashboard">Dashboard</button>
+            <button class="nav-btn" data-screen="cadastro">
+              Novo Cadastro
+            </button>
+            <button class="nav-btn active" data-screen="donations">
+              Doações
+            </button>
+            <button
+              class="nav-btn"
+              data-screen="relatorios"
+              id="nav-relatorios-donations"
+            >
+              Relatórios
+            </button>
+            <button
+              class="nav-btn"
+              data-screen="usuarios"
+              id="nav-usuarios-donations"
+            >
+              Gestão Usuários
+            </button>
+            <button class="nav-btn logout-btn">Sair</button>
+          </div>
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <div class="container">
+          <div class="cadastro-grid">
+            <div class="card">
+              <div class="card__header">
+                <h3>Registro de Doação</h3>
+              </div>
+              <div class="card__body">
+                <form id="donation-form" class="cadastro-form">
+                  <div class="form-group">
+                    <label for="beneficiary-select" class="form-label"
+                      >Beneficiário *</label
+                    >
+                    <select
+                      id="beneficiary-select"
+                      class="form-control"
+                      required
+                    ></select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Tipo de Doação *</label>
+                    <div class="d-flex" style="gap: 1rem">
+                      <label
+                        ><input
+                          type="radio"
+                          name="donation-type"
+                          value="muda"
+                          required
+                        />
+                        Muda</label
+                      >
+                      <label
+                        ><input
+                          type="radio"
+                          name="donation-type"
+                          value="semente"
+                        />
+                        Semente</label
+                      >
+                      <label
+                        ><input
+                          type="radio"
+                          name="donation-type"
+                          value="maniva"
+                        />
+                        Maniva</label
+                      >
+                      <label
+                        ><input
+                          type="radio"
+                          name="donation-type"
+                          value="alimento"
+                        />
+                        Alimento</label
+                      >
+                    </div>
+                  </div>
+
+                  <div id="donation-items" class="hidden"></div>
+
+                  <div class="form-group">
+                    <label for="quantity" class="form-label"
+                      >Quantidade (kg) *</label
+                    >
+                    <input
+                      type="number"
+                      id="quantity"
+                      class="form-control"
+                      step="0.1"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <button
+                      type="button"
+                      id="get-location-btn"
+                      class="btn btn--secondary"
+                    >
+                      📍 Obter Localização GPS
+                    </button>
+                    <input type="hidden" id="donation-latitude" />
+                    <input type="hidden" id="donation-longitude" />
+                    <p id="location-status" class="mt-2"></p>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn--primary">
+                      💾 Registrar Doação
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card__header">
+                <h3>Últimas Doações</h3>
+              </div>
+              <div class="card__body">
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Beneficiário</th>
+                        <th>Item</th>
+                        <th>Qtd (kg)</th>
+                        <th>Data</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recent-donations-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
     <div id="relatorios-screen" class="screen hidden">
       <nav class="navbar">
         <div class="nav-container">
@@ -635,6 +797,7 @@
             <button class="nav-btn" data-screen="cadastro">
               Novo Cadastro
             </button>
+            <button class="nav-btn" data-screen="donations">Doações</button>
             <button class="nav-btn active" data-screen="relatorios">
               Relatórios
             </button>
@@ -721,6 +884,7 @@
             <button class="nav-btn" data-screen="cadastro">
               Novo Cadastro
             </button>
+            <button class="nav-btn" data-screen="donations">Doações</button>
             <button class="nav-btn" data-screen="relatorios">Relatórios</button>
             <button class="nav-btn active" data-screen="usuarios">
               Gestão Usuários
