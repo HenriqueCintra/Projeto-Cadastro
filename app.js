@@ -609,6 +609,151 @@ const initModal = () => {
   });
 };
 
+// Validações
+const validateCPF = (cpf) => {
+  cpf = cpf.replace(/[^\d]/g, "");
+  if (cpf.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cpf.charAt(9))) return false;
+
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cpf.charAt(10))) return false;
+
+  return true;
+};
+
+const validateCNPJ = (cnpj) => {
+  cnpj = cnpj.replace(/[^\d]/g, "");
+  if (cnpj.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(cnpj)) return false;
+
+  let sum = 0;
+  let weight = 2;
+  for (let i = 11; i >= 0; i--) {
+    sum += parseInt(cnpj.charAt(i)) * weight;
+    weight = weight === 9 ? 2 : weight + 1;
+  }
+  let remainder = sum % 11;
+  let digit1 = remainder < 2 ? 0 : 11 - remainder;
+  if (digit1 !== parseInt(cnpj.charAt(12))) return false;
+
+  sum = 0;
+  weight = 2;
+  for (let i = 12; i >= 0; i--) {
+    sum += parseInt(cnpj.charAt(i)) * weight;
+    weight = weight === 9 ? 2 : weight + 1;
+  }
+  remainder = sum % 11;
+  let digit2 = remainder < 2 ? 0 : 11 - remainder;
+  if (digit2 !== parseInt(cnpj.charAt(13))) return false;
+
+  return true;
+};
+
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const validatePhone = (phone) => {
+  const phoneRegex = /^[\d\s\(\)\-\+]+$/;
+  const cleanPhone = phone.replace(/[^\d]/g, "");
+  return phoneRegex.test(phone) && cleanPhone.length >= 10;
+};
+
+const showFieldError = (fieldId, message) => {
+  const field = document.getElementById(fieldId);
+  const errorDiv = document.getElementById(`${fieldId}-error`);
+
+  field.classList.add("form-error");
+
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
+  } else {
+    const error = document.createElement("div");
+    error.id = `${fieldId}-error`;
+    error.className = "error-message";
+    error.textContent = message;
+    field.parentNode.appendChild(error);
+  }
+};
+
+const clearFieldError = (fieldId) => {
+  const field = document.getElementById(fieldId);
+  const errorDiv = document.getElementById(`${fieldId}-error`);
+
+  field.classList.remove("form-error");
+  if (errorDiv) {
+    errorDiv.style.display = "none";
+  }
+};
+
+const validateForm = (form) => {
+  // Limpar erros anteriores
+  document.querySelectorAll(".error-message").forEach((el) => el.remove());
+  document
+    .querySelectorAll(".form-error")
+    .forEach((el) => el.classList.remove("form-error"));
+
+  // Validações opcionais apenas para formatação (não bloqueiam o cadastro)
+
+  // Validar documento (CPF/CNPJ) - apenas se preenchido
+  const documento = form.documento.value.replace(/[^\d]/g, "");
+  if (documento && documento.length === 11) {
+    if (!validateCPF(form.documento.value)) {
+      showFieldError("documento", "CPF inválido (opcional)");
+    }
+  } else if (documento && documento.length === 14) {
+    if (!validateCNPJ(form.documento.value)) {
+      showFieldError("documento", "CNPJ inválido (opcional)");
+    }
+  }
+
+  // Validar telefone - apenas se preenchido
+  if (form.telefone.value && !validatePhone(form.telefone.value)) {
+    showFieldError("telefone", "Telefone inválido (opcional)");
+  }
+
+  // Validar email - apenas se preenchido
+  if (form.email.value && !validateEmail(form.email.value)) {
+    showFieldError("email", "Email inválido (opcional)");
+  }
+
+  // Validar área cultivada - apenas se preenchido
+  const area = parseFloat(form.area_cultivada.value);
+  if (form.area_cultivada.value && (isNaN(area) || area < 0)) {
+    showFieldError(
+      "area_cultivada",
+      "Área cultivada deve ser um número válido (opcional)"
+    );
+  }
+
+  // Validar pessoas na família - apenas se preenchido
+  const pessoas = parseInt(form.pessoas_familia.value);
+  if (form.pessoas_familia.value && (isNaN(pessoas) || pessoas < 0)) {
+    showFieldError(
+      "pessoas_familia",
+      "Número de pessoas deve ser um número válido (opcional)"
+    );
+  }
+
+  // Sempre permitir o cadastro, mesmo com erros de formatação
+  return true;
+};
+
 // Formulário de Cadastro
 const initCadastroForm = () => {
   document
@@ -643,7 +788,50 @@ const initCadastroForm = () => {
         .toLowerCase()
         .replace(/ |-/g, "")}`;
       document.getElementById(fieldId).classList.toggle("hidden", !cb.checked);
+
+      // Limpar erro de culturas se alguma for selecionada
+      const culturasError = document.querySelector(".cultures-error");
+      if (culturasError) {
+        culturasError.remove();
+      }
     });
+  });
+
+  // Adicionar apenas máscaras (sem validação bloqueante)
+  document.getElementById("documento").addEventListener("input", function () {
+    let value = this.value.replace(/[^\d]/g, "");
+
+    if (value.length <= 11) {
+      // Máscara CPF
+      value = value.replace(/(\d{3})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    } else {
+      // Máscara CNPJ
+      value = value.replace(/(\d{2})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d)/, "$1.$2");
+      value = value.replace(/(\d{3})(\d)/, "$1/$2");
+      value = value.replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+    }
+
+    this.value = value;
+  });
+
+  // Máscara para telefone
+  document.getElementById("telefone").addEventListener("input", function () {
+    let value = this.value.replace(/[^\d]/g, "");
+
+    if (value.length <= 10) {
+      // Telefone fixo
+      value = value.replace(/(\d{2})(\d)/, "($1) $2");
+      value = value.replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      // Celular
+      value = value.replace(/(\d{2})(\d)/, "($1) $2");
+      value = value.replace(/(\d{5})(\d)/, "$1-$2");
+    }
+
+    this.value = value;
   });
 
   document
@@ -651,48 +839,76 @@ const initCadastroForm = () => {
     .addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
-      const newBeneficiarioData = {
-        nome: form.nome.value,
-        cpf: form.documento.value,
-        telefone: form.telefone.value,
-        email: form.email.value,
-        tipo: form.tipo.value,
-        endereco: form.endereco.value,
-        latitude: form.latitude.value,
-        longitude: form.longitude.value,
-        area_cultivada: parseFloat(form.area_cultivada.value) || 0,
-        pessoas_familia: parseInt(form.pessoas_familia.value) || 0,
-        culturas: [
-          ...form.querySelectorAll('input[name="culturas"]:checked'),
-        ].map((cb) => cb.value),
-        variedades: {},
-        acesso_agua: form.acesso_agua.value,
-        outros_programas: form.outros_programas.value,
-        observacoes: form.observacoes.value,
-        data_cadastro: new Date().toISOString().split("T")[0],
-        cadastrado_por: currentUser.username,
-      };
 
-      newBeneficiarioData.culturas.forEach((cultura) => {
-        const inputId = `variedades-input-${cultura
-          .toLowerCase()
-          .replace(/ |-/g, "")}`;
-        newBeneficiarioData.variedades[cultura] =
-          document.getElementById(inputId).value;
-      });
+      // Apenas validar formatação (não bloqueia o cadastro)
+      validateForm(form);
+
+      // Mostrar loading
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "💾 Salvando...";
+      submitBtn.disabled = true;
 
       try {
+        const newBeneficiarioData = {
+          nome: form.nome.value.trim() || "Não informado",
+          cpf: form.documento.value.replace(/[^\d]/g, "") || "",
+          telefone: form.telefone.value.trim() || "",
+          email: form.email.value.trim() || "",
+          tipo: form.tipo.value || "Não informado",
+          renda: form.renda.value || "",
+          endereco: form.endereco.value.trim() || "Não informado",
+          latitude: form.latitude.value || "",
+          longitude: form.longitude.value || "",
+          area_cultivada: parseFloat(form.area_cultivada.value) || 0,
+          pessoas_familia: parseInt(form.pessoas_familia.value) || 0,
+          culturas: [
+            ...form.querySelectorAll('input[name="culturas"]:checked'),
+          ].map((cb) => cb.value),
+          variedades: {},
+          acesso_agua: form.acesso_agua.value.trim() || "",
+          outros_programas: form.outros_programas.value.trim() || "",
+          observacoes: form.observacoes.value.trim() || "",
+          data_cadastro: new Date().toISOString().split("T")[0],
+          cadastrado_por: currentUser.username,
+        };
+
+        // Processar variedades
+        newBeneficiarioData.culturas.forEach((cultura) => {
+          const inputId = `variedades-input-${cultura
+            .toLowerCase()
+            .replace(/ |-/g, "")}`;
+          const variedadesInput = document.getElementById(inputId);
+          if (variedadesInput) {
+            newBeneficiarioData.variedades[cultura] =
+              variedadesInput.value.trim();
+          }
+        });
+
         await db.collection("beneficiarios").add(newBeneficiarioData);
         logAction("Novo cadastro", `Beneficiário: ${newBeneficiarioData.nome}`);
         showToast("Cadastro salvo com sucesso na nuvem!");
+
+        // Limpar formulário
         form.reset();
         document
           .querySelectorAll(".variety-field")
           .forEach((el) => el.classList.add("hidden"));
-        updateRecentCadastros(); // A atualização será automática pelo onSnapshot
+        document
+          .querySelectorAll(".error-message")
+          .forEach((el) => el.remove());
+        document
+          .querySelectorAll(".form-error")
+          .forEach((el) => el.classList.remove("form-error"));
+
+        updateRecentCadastros();
       } catch (error) {
         console.error("Erro ao adicionar documento: ", error);
         showToast("Falha ao salvar o cadastro. Tente novamente.", "error");
+      } finally {
+        // Restaurar botão
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
       }
     });
   updateRecentCadastros();
