@@ -478,12 +478,19 @@ const updateBeneficiariesTable = () => {
 
     row.innerHTML = `
       <td>
-        <div>
-          <strong>${beneficiario.nome}</strong><br>
-          <small style="color: var(--color-text-secondary);">${maskData(
-            beneficiario.cpf,
-            "cpf"
-          )}</small>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${
+            beneficiario.foto
+              ? `<img src="${beneficiario.foto}" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-border);">`
+              : `<div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-bg-1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">👤</div>`
+          }
+          <div>
+            <strong>${beneficiario.nome}</strong><br>
+            <small style="color: var(--color-text-secondary);">${maskData(
+              beneficiario.cpf,
+              "cpf"
+            )}</small>
+          </div>
         </div>
       </td>
       <td><span class="type-badge ${getTypeBadgeClass(beneficiario.tipo)}">${
@@ -559,6 +566,18 @@ const showBeneficiaryDetails = (id) => {
   modalTitle.textContent = `Detalhes - ${beneficiario.nome}`;
 
   modalBody.innerHTML = `
+        ${
+          beneficiario.foto
+            ? `
+        <div class="detail-row">
+          <span class="detail-label">Foto:</span>
+          <div class="detail-value">
+            <img src="${beneficiario.foto}" alt="Foto do beneficiário" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
+          </div>
+        </div>
+        `
+            : ""
+        }
         <div class="detail-row"><span class="detail-label">ID:</span><span class="detail-value">${
           beneficiario.id
         }</span></div>
@@ -782,6 +801,9 @@ const initCadastroForm = () => {
       }
     });
 
+  // Inicializar funcionalidade de foto
+  initPhotoCapture();
+
   document.querySelectorAll('input[name="culturas"]').forEach((cb) => {
     cb.addEventListener("change", () => {
       const fieldId = `variedades-${cb.value
@@ -846,7 +868,7 @@ const initCadastroForm = () => {
       // Mostrar loading
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
-      submitBtn.textContent = "💾 Salvando...";
+      submitBtn.textContent = "Salvando...";
       submitBtn.disabled = true;
 
       try {
@@ -869,6 +891,7 @@ const initCadastroForm = () => {
           acesso_agua: form.acesso_agua.value.trim() || "",
           outros_programas: form.outros_programas.value.trim() || "",
           observacoes: form.observacoes.value.trim() || "",
+          foto: form.photo_data.value || "",
           data_cadastro: new Date().toISOString().split("T")[0],
           cadastrado_por: currentUser.username,
         };
@@ -924,11 +947,22 @@ const updateRecentCadastros = () => {
   recent.forEach((beneficiario) => {
     const item = document.createElement("div");
     item.className = "recent-item";
-    item.innerHTML = `<h4>${beneficiario.nome}</h4><p>${
-      beneficiario.tipo
-    }</p><div class="recent-date">${formatDate(
-      beneficiario.data_cadastro
-    )}</div>`;
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        ${
+          beneficiario.foto
+            ? `<img src="${beneficiario.foto}" alt="Foto" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid var(--color-border);">`
+            : `<div style="width: 50px; height: 50px; border-radius: 8px; background: var(--color-bg-1); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👤</div>`
+        }
+        <div>
+          <h4>${beneficiario.nome}</h4>
+          <p>${beneficiario.tipo}</p>
+          <div class="recent-date">${formatDate(
+            beneficiario.data_cadastro
+          )}</div>
+        </div>
+      </div>
+    `;
     recentList.appendChild(item);
   });
 };
@@ -1201,6 +1235,141 @@ const updateStatsSummary = () => {
 const updateUserManagement = () => {
   if (currentUser.role !== "administrador") return;
   // Lógica de gestão de usuários aqui
+};
+
+// Funcionalidade de Captura de Foto
+let currentStream = null;
+
+const initPhotoCapture = () => {
+  const takePhotoBtn = document.getElementById("take-photo-btn");
+  const removePhotoBtn = document.getElementById("remove-photo-btn");
+  const photoModal = document.getElementById("photo-modal");
+  const cancelPhotoBtn = document.getElementById("cancel-photo-btn");
+  const capturePhotoBtn = document.getElementById("capture-photo-btn");
+  const photoCamera = document.getElementById("photo-camera");
+  const photoCanvas = document.getElementById("photo-canvas");
+  const photoData = document.getElementById("photo-data");
+  const photoPreview = document.getElementById("photo-preview");
+
+  // Abrir modal de captura
+  takePhotoBtn.addEventListener("click", async () => {
+    try {
+      photoModal.classList.add("show");
+      await startCamera();
+    } catch (error) {
+      console.error("Erro ao acessar câmera:", error);
+      showToast("Erro ao acessar câmera. Verifique as permissões.", "error");
+    }
+  });
+
+  // Cancelar captura
+  cancelPhotoBtn.addEventListener("click", () => {
+    closePhotoModal();
+  });
+
+  // Capturar foto
+  capturePhotoBtn.addEventListener("click", () => {
+    capturePhoto();
+  });
+
+  // Remover foto
+  removePhotoBtn.addEventListener("click", () => {
+    removePhoto();
+  });
+
+  // Fechar modal clicando fora
+  photoModal.addEventListener("click", (e) => {
+    if (e.target === photoModal) {
+      closePhotoModal();
+    }
+  });
+};
+
+const startCamera = async () => {
+  try {
+    const constraints = {
+      video: {
+        facingMode: "user", // Câmera frontal
+        width: { ideal: 400 },
+        height: { ideal: 300 },
+      },
+    };
+
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById("photo-camera");
+    video.srcObject = currentStream;
+
+    showToast(
+      "Câmera ativada. Posicione-se na tela e clique para capturar.",
+      "info"
+    );
+  } catch (error) {
+    console.error("Erro ao acessar câmera:", error);
+    throw error;
+  }
+};
+
+const capturePhoto = () => {
+  const video = document.getElementById("photo-camera");
+  const canvas = document.getElementById("photo-canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Definir dimensões do canvas
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Desenhar frame do vídeo no canvas
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Converter para base64
+  const photoDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+
+  // Salvar dados da foto
+  document.getElementById("photo-data").value = photoDataUrl;
+
+  // Mostrar preview
+  showPhotoPreview(photoDataUrl);
+
+  // Fechar modal
+  closePhotoModal();
+
+  showToast("Foto capturada com sucesso!", "success");
+};
+
+const showPhotoPreview = (photoDataUrl) => {
+  const photoPreview = document.getElementById("photo-preview");
+  const removePhotoBtn = document.getElementById("remove-photo-btn");
+
+  photoPreview.innerHTML = `<img src="${photoDataUrl}" alt="Foto capturada">`;
+  removePhotoBtn.style.display = "block";
+};
+
+const removePhoto = () => {
+  const photoPreview = document.getElementById("photo-preview");
+  const removePhotoBtn = document.getElementById("remove-photo-btn");
+  const photoData = document.getElementById("photo-data");
+
+  photoPreview.innerHTML = `
+    <div class="photo-placeholder">
+      <span>📷</span>
+      <p>Nenhuma foto selecionada</p>
+    </div>
+  `;
+  removePhotoBtn.style.display = "none";
+  photoData.value = "";
+
+  showToast("Foto removida", "info");
+};
+
+const closePhotoModal = () => {
+  const photoModal = document.getElementById("photo-modal");
+  photoModal.classList.remove("show");
+
+  // Parar stream da câmera
+  if (currentStream) {
+    currentStream.getTracks().forEach((track) => track.stop());
+    currentStream = null;
+  }
 };
 
 // Inicialização

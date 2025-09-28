@@ -541,9 +541,39 @@
                     ></textarea>
                   </div>
 
+                  <div class="form-group">
+                    <label class="form-label">Foto do Beneficiário</label>
+                    <div class="photo-section">
+                      <div class="photo-preview" id="photo-preview">
+                        <div class="photo-placeholder">
+                          <span>📷</span>
+                          <p>Nenhuma foto selecionada</p>
+                        </div>
+                      </div>
+                      <div class="photo-controls">
+                        <button
+                          type="button"
+                          id="take-photo-btn"
+                          class="btn btn--secondary"
+                        >
+                          Tirar Foto
+                        </button>
+                        <button
+                          type="button"
+                          id="remove-photo-btn"
+                          class="btn btn--outline"
+                          style="display: none"
+                        >
+                          Remover Foto
+                        </button>
+                      </div>
+                    </div>
+                    <input type="hidden" id="photo-data" name="photo_data" />
+                  </div>
+
                   <div class="form-actions">
                     <button type="submit" class="btn btn--primary">
-                      💾 Salvar Cadastro
+                      Salvar Cadastro
                     </button>
                   </div>
                 </form>
@@ -895,6 +925,29 @@
     <div id="toast" class="toast hidden">
       <div class="toast-content">
         <span id="toast-message"></span>
+      </div>
+    </div>
+
+    <!-- Modal de Captura de Foto -->
+    <div id="photo-modal" class="photo-modal">
+      <div class="photo-modal-content">
+        <h3>Capturar Foto</h3>
+        <div class="photo-camera-container">
+          <video id="photo-camera" autoplay playsinline></video>
+          <canvas id="photo-canvas" style="display: none"></canvas>
+        </div>
+        <div class="photo-capture-controls">
+          <button
+            id="capture-photo-btn"
+            class="capture-btn"
+            title="Capturar Foto"
+          >
+            📷
+          </button>
+          <button id="cancel-photo-btn" class="photo-cancel-btn">
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
 

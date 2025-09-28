@@ -1855,3 +1855,165 @@ select.form-control {
 .user-cadastrador .access-warning {
   display: block;
 }
+
+/* Seção de Foto */
+.photo-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.photo-preview {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+}
+
+.photo-placeholder {
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.photo-placeholder span {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--space-8);
+}
+
+.photo-placeholder p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.photo-controls {
+  display: flex;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+/* Modal de Captura de Foto */
+#photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+#photo-modal.show {
+  display: flex;
+}
+
+.photo-modal-content {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.photo-camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-charcoal-800);
+}
+
+#photo-camera {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-capture-controls {
+  display: flex;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.capture-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--color-white);
+  background: var(--color-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--color-white);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.capture-btn:hover {
+  background: var(--color-primary-hover);
+  transform: scale(1.05);
+}
+
+.capture-btn:active {
+  transform: scale(0.95);
+}
+
+.photo-cancel-btn {
+  background: var(--color-error);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+}
+
+.photo-cancel-btn:hover {
+  background: rgba(var(--color-error-rgb), 0.8);
+}
+
+/* Responsividade para foto */
+@media (max-width: 768px) {
+  .photo-preview {
+    width: 150px;
+    height: 150px;
+  }
+
+  .photo-modal-content {
+    padding: var(--space-16);
+    margin: var(--space-16);
+  }
+
+  .photo-camera-container {
+    height: 250px;
+  }
+
+  .photo-capture-controls {
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+}

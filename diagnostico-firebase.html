@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diagnóstico Firebase - Nas Ramas da Esperança</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .status {
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        border-left-color: #28a745;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-left-color: #dc3545;
+      }
+      .warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-left-color: #ffc107;
+      }
+      .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border-left-color: #17a2b8;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .code {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        margin: 10px 0;
+        border: 1px solid #e9ecef;
+      }
+      .step {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Diagnóstico Firebase</h1>
+      <p>Sistema de Gestão de Beneficiários - Nas Ramas da Esperança</p>
+
+      <div id="status" class="status info">Iniciando diagnóstico...</div>
+
+      <div class="step">
+        <h3>📋 Checklist de Verificação</h3>
+        <div id="checklist">
+          <div id="check-firebase-config">
+            ⏳ Verificando configuração do Firebase...
+          </div>
+          <div id="check-connection">⏳ Testando conexão...</div>
+          <div id="check-permissions">⏳ Verificando permissões...</div>
+          <div id="check-collections">⏳ Verificando coleções...</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>🔧 Soluções Recomendadas</h3>
+        <div id="solutions"></div>
+      </div>
+
+      <div class="step">
+        <h3>🧪 Testes</h3>
+        <button onclick="runFullDiagnostic()">
+          Executar Diagnóstico Completo
+        </button>
+        <button onclick="testSimpleWrite()">Teste de Escrita Simples</button>
+        <button onclick="testSimpleRead()">Teste de Leitura Simples</button>
+        <button onclick="clearResults()">Limpar Resultados</button>
+      </div>
+
+      <div id="results"></div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyCNRPBXsZKe9EGWYA5S0zoXQtYsyAIs3NA",
+        authDomain: "bd-cadastro-f43a1.firebaseapp.com",
+        projectId: "bd-cadastro-f43a1",
+        storageBucket: "bd-cadastro-f43a1.firebasestorage.app",
+        messagingSenderId: "798258380781",
+        appId: "1:798258380781:web:294bca7733ce029981b1e4",
+        measurementId: "G-J7GH724JS2",
+      };
+
+      let db;
+      let diagnosticResults = [];
+
+      // Inicializar Firebase
+      try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        updateStatus("success", "✅ Firebase inicializado com sucesso!");
+        updateChecklist(
+          "check-firebase-config",
+          "success",
+          "✅ Configuração do Firebase OK"
+        );
+      } catch (error) {
+        updateStatus(
+          "error",
+          "❌ Erro ao inicializar Firebase: " + error.message
+        );
+        updateChecklist(
+          "check-firebase-config",
+          "error",
+          "❌ Erro na configuração: " + error.message
+        );
+      }
+
+      function updateStatus(type, message) {
+        const status = document.getElementById("status");
+        status.className = `status ${type}`;
+        status.textContent = message;
+      }
+
+      function updateChecklist(id, type, message) {
+        const element = document.getElementById(id);
+        element.className = `status ${type}`;
+        element.innerHTML = message;
+      }
+
+      function addResult(message, type = "info") {
+        const results = document.getElementById("results");
+        const div = document.createElement("div");
+        div.className = `status ${type}`;
+        div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+        results.appendChild(div);
+        results.scrollTop = results.scrollHeight;
+        diagnosticResults.push({ timestamp: new Date(), type, message });
+      }
+
+      async function runFullDiagnostic() {
+        addResult("🔍 Iniciando diagnóstico completo...", "info");
+
+        // Teste 1: Conexão básica
+        try {
+          addResult("Testando conexão básica...", "info");
+          await db.collection("test").doc("diagnostic").get();
+          addResult("✅ Conexão básica OK", "success");
+          updateChecklist(
+            "check-connection",
+            "success",
+            "✅ Conexão estabelecida"
+          );
+        } catch (error) {
+          addResult("❌ Erro na conexão básica: " + error.message, "error");
+          updateChecklist("check-connection", "error", "❌ Erro na conexão");
+        }
+
+        // Teste 2: Permissões de escrita
+        try {
+          addResult("Testando permissões de escrita...", "info");
+          await db.collection("test").doc("permissions").set({
+            timestamp: new Date(),
+            test: "permissions_write",
+          });
+          addResult("✅ Permissões de escrita OK", "success");
+          updateChecklist("check-permissions", "success", "✅ Permissões OK");
+        } catch (error) {
+          addResult(
+            "❌ Erro nas permissões de escrita: " + error.message,
+            "error"
+          );
+          updateChecklist(
+            "check-permissions",
+            "error",
+            "❌ Erro nas permissões"
+          );
+
+          // Mostrar soluções
+          showSolutions();
+        }
+
+        // Teste 3: Verificar coleções
+        try {
+          addResult("Verificando coleções...", "info");
+          const collections = ["beneficiarios", "donations", "test"];
+          for (const collection of collections) {
+            try {
+              await db.collection(collection).limit(1).get();
+              addResult(`✅ Coleção '${collection}' acessível`, "success");
+            } catch (error) {
+              addResult(
+                `❌ Erro na coleção '${collection}': ${error.message}`,
+                "error"
+              );
+            }
+          }
+          updateChecklist(
+            "check-collections",
+            "success",
+            "✅ Coleções verificadas"
+          );
+        } catch (error) {
+          addResult("❌ Erro ao verificar coleções: " + error.message, "error");
+          updateChecklist("check-collections", "error", "❌ Erro nas coleções");
+        }
+
+        addResult("🏁 Diagnóstico completo finalizado!", "info");
+      }
+
+      function showSolutions() {
+        const solutions = document.getElementById("solutions");
+        solutions.innerHTML = `
+                <div class="status warning">
+                    <h4>🔧 Soluções para Erro de Permissões:</h4>
+                    <ol>
+                        <li><strong>Acesse o Console do Firebase:</strong> <a href="https://console.firebase.google.com" target="_blank">https://console.firebase.google.com</a></li>
+                        <li><strong>Selecione seu projeto:</strong> BD-Cadastro</li>
+                        <li><strong>Vá para Firestore Database → Rules</strong></li>
+                        <li><strong>Substitua as regras por:</strong></li>
+                    </ol>
+                    <div class="code">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+                    </div>
+                    <p><strong>5. Clique em "Publicar" (Publish)</strong></p>
+                    <p><strong>6. Recarregue esta página e teste novamente</strong></p>
+                </div>
+            `;
+      }
+
+      async function testSimpleWrite() {
+        try {
+          addResult("Testando escrita simples...", "info");
+          await db.collection("test").doc("simple").set({
+            message: "Teste de escrita simples",
+            timestamp: new Date(),
+          });
+          addResult("✅ Escrita simples OK", "success");
+        } catch (error) {
+          addResult("❌ Erro na escrita simples: " + error.message, "error");
+        }
+      }
+
+      async function testSimpleRead() {
+        try {
+          addResult("Testando leitura simples...", "info");
+          const doc = await db.collection("test").doc("simple").get();
+          if (doc.exists) {
+            addResult(
+              "✅ Leitura simples OK - Dados: " + JSON.stringify(doc.data()),
+              "success"
+            );
+          } else {
+            addResult(
+              "⚠️ Documento não encontrado (normal se não foi criado)",
+              "warning"
+            );
+          }
+        } catch (error) {
+          addResult("❌ Erro na leitura simples: " + error.message, "error");
+        }
+      }
+
+      function clearResults() {
+        document.getElementById("results").innerHTML = "";
+        diagnosticResults = [];
+      }
+
+      // Executar diagnóstico automático ao carregar
+      window.addEventListener("load", () => {
+        setTimeout(runFullDiagnostic, 1000);
+      });
+    </script>
+  </body>
+</html>
+
