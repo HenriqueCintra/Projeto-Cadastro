@@ -732,9 +732,9 @@ select.form-control {
 }
 
 @font-face {
-  font-family: 'FKGroteskNeue';
-  src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2')
-    format('woff2');
+  font-family: "FKGroteskNeue";
+  src: url("https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2")
+    format("woff2");
 }
 
 /* END PERPLEXITY DESIGN SYSTEM */
@@ -1648,18 +1648,18 @@ select.form-control {
 
 /* Perfis de Interface */
 .interface-admin {
-  --primary-color: #1FB8CD;
-  --accent-color: #5D878F;
+  --primary-color: #1fb8cd;
+  --accent-color: #5d878f;
 }
 
 .interface-supervisor {
-  --primary-color: #FFC185;
-  --accent-color: #B4413C;
+  --primary-color: #ffc185;
+  --accent-color: #b4413c;
 }
 
 .interface-cadastrador {
-  --primary-color: #1FB8CD;
-  --accent-color: #ECEBD5;
+  --primary-color: #1fb8cd;
+  --accent-color: #ecebd5;
 }
 
 .interface-admin .nav-title,
@@ -1865,7 +1865,7 @@ select.form-control {
 }
 
 .loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
