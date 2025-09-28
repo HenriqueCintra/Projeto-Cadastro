@@ -1,14 +1,51 @@
-// Sistema de Gestão de Beneficiários - Nas Ramas da Esperança
-// Com Hierarquia de Acesso e Controle de Permissões
-// Atualizado com Campos de Culturas e Variedades
-// E com salvamento de dados no LocalStorage
+// --- INÍCIO DA CONFIGURAÇÃO DO FIREBASE ---
+// Suas credenciais foram inseridas aqui
+const firebaseConfig = {
+  apiKey: "AIzaSyCNRPBXsZKe9EGWYA5S0zoXQtYsyAIs3NA",
+  authDomain: "bd-cadastro-f43a1.firebaseapp.com",
+  projectId: "bd-cadastro-f43a1",
+  storageBucket: "bd-cadastro-f43a1.appspot.com",
+  messagingSenderId: "798258380781",
+  appId: "1:798258380781:web:294bca7733ce029981b1e4",
+  measurementId: "G-J7GH724JS2",
+};
 
-// --- INÍCIO DA MODIFICAÇÃO: Carregar dados salvos ---
-// Tenta carregar os dados do localStorage. Se não houver, começa com arrays vazios.
-let beneficiarios =
-  JSON.parse(localStorage.getItem("nasRamasBeneficiarios")) || [];
-let donations = JSON.parse(localStorage.getItem("nasRamasDonations")) || [];
-// --- FIM DA MODIFICAÇÃO ---
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+// --- FIM DA CONFIGURAÇÃO DO FIREBASE ---
+
+// Sistema de Gestão de Beneficiários - Nas Ramas da Esperança
+let beneficiarios = [];
+let donations = [];
+
+// --- Carrega os dados do Firestore ao iniciar ---
+const loadDataFromFirestore = async () => {
+  try {
+    // Escuta por atualizações em tempo real na coleção de beneficiários
+    db.collection("beneficiarios").onSnapshot((snapshot) => {
+      beneficiarios = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // Se o usuário estiver logado, atualiza a tela com os novos dados
+      if (currentUser) {
+        updateDashboard();
+      }
+    });
+
+    // Escuta por atualizações em tempo real na coleção de doações
+    db.collection("donations").onSnapshot((snapshot) => {
+      donations = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      if (currentUser && currentScreen === "donations") {
+        updateRecentDonations();
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao carregar dados do Firestore: ", error);
+    showToast("Erro ao carregar dados. Verifique o console.", "error");
+  }
+};
 
 // Sistema de Usuários e Permissões
 const users = {
@@ -52,15 +89,8 @@ const users = {
 // Variáveis globais
 let currentUser = null;
 let currentScreen = "login";
-let filteredBeneficiarios = [...beneficiarios];
+let filteredBeneficiarios = [];
 let auditLog = [];
-
-// --- INÍCIO DA MODIFICAÇÃO: Função para salvar dados ---
-const saveDataToLocalStorage = () => {
-  localStorage.setItem("nasRamasBeneficiarios", JSON.stringify(beneficiarios));
-  localStorage.setItem("nasRamasDonations", JSON.stringify(donations));
-};
-// --- FIM DA MODIFICAÇÃO ---
 
 // Sistema de Auditoria
 const logAction = (action, details = "") => {
@@ -96,6 +126,7 @@ const canAccessScreen = (screenName) => {
 
 // Utilitários
 const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleDateString("pt-BR");
 };
@@ -138,10 +169,12 @@ const maskData = (data, field) => {
   }
 };
 const getEstadoFromAddress = (endereco) => {
+  if (!endereco) return "N/A";
   const estados = endereco.match(/, ([A-Z]{2})$/);
   return estados ? estados[1] : "N/A";
 };
 const getCidadeFromAddress = (endereco) => {
+  if (!endereco) return "N/A";
   const parts = endereco.split(", ");
   return parts.length >= 2 ? parts[parts.length - 2] : "N/A";
 };
@@ -182,7 +215,7 @@ const showToast = (message, type = "success") => {
 const initLogin = () => {
   const loginForm = document.getElementById("login-form");
   const loginError = document.getElementById("login-error");
-  loginForm.addEventListener("submit", (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -191,6 +224,7 @@ const initLogin = () => {
       currentUser = user;
       document.body.className = `user-${currentUser.role}`;
       logAction("Login realizado", `Usuário ${username} logou no sistema`);
+
       showScreen("dashboard");
       const welcomeMessages = {
         administrador: "Bem-vindo! Você tem acesso completo ao sistema.",
@@ -347,10 +381,17 @@ const updateMetrics = () => {
 
 const updateCharts = () => {
   if (currentUser.role !== "cadastrador") {
+    if (window.culturesChart instanceof Chart) {
+      window.culturesChart.destroy();
+    }
+    if (window.producersChart instanceof Chart) {
+      window.producersChart.destroy();
+    }
     createCulturesChart();
     createProducersChart();
   }
 };
+
 const createCulturesChart = () => {
   const ctx = document.getElementById("culturesChart")?.getContext("2d");
   if (!ctx) return;
@@ -362,7 +403,7 @@ const createCulturesChart = () => {
       });
     }
   });
-  new Chart(ctx, {
+  window.culturesChart = new Chart(ctx, {
     type: "pie",
     data: {
       labels: Object.keys(cultureCounts),
@@ -403,7 +444,7 @@ const createProducersChart = () => {
       });
     }
   });
-  new Chart(ctx, {
+  window.producersChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: Object.keys(cultureCounts),
@@ -464,11 +505,11 @@ const updateBeneficiariesTable = () => {
         beneficiario.area_cultivada,
         "area_cultivada"
       )} ha</td>
-      <td>${beneficiario.pessoas_familia}</td>
+      <td>${beneficiario.pessoas_familia || "N/A"}</td>
       <td>${formatDate(beneficiario.data_cadastro)}</td>
-      <td><button class="action-btn" onclick="showBeneficiaryDetails(${
+      <td><button class="action-btn" onclick="showBeneficiaryDetails('${
         beneficiario.id
-      })">👁️ Ver</button></td>
+      }')">👁️ Ver</button></td>
     `;
     tableBody.appendChild(row);
   });
@@ -502,7 +543,7 @@ const initTableFilters = () => {
       showToast("Você não tem permissão para exportar dados.", "error");
       return;
     }
-    // CSV Generation logic here
+    // Lógica para exportar CSV
   });
 };
 
@@ -510,9 +551,53 @@ const initTableFilters = () => {
 const showBeneficiaryDetails = (id) => {
   const beneficiario = beneficiarios.find((b) => b.id === id);
   if (!beneficiario) return;
-  // A lógica para exibir o modal permanece a mesma do seu código original completo.
-  // Vou colocar uma versão resumida aqui para não estender demais a resposta.
-  alert(`Exibindo detalhes para: ${beneficiario.nome}`);
+
+  const modal = document.getElementById("details-modal");
+  const modalTitle = document.getElementById("modal-title");
+  const modalBody = document.getElementById("modal-body");
+
+  modalTitle.textContent = `Detalhes - ${beneficiario.nome}`;
+
+  modalBody.innerHTML = `
+        <div class="detail-row"><span class="detail-label">ID:</span><span class="detail-value">${
+          beneficiario.id
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">Nome:</span><span class="detail-value">${
+          beneficiario.nome
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">CPF/CNPJ:</span><span class="detail-value">${maskData(
+          beneficiario.cpf,
+          "cpf"
+        )}</span></div>
+        <div class="detail-row"><span class="detail-label">Telefone:</span><span class="detail-value">${maskData(
+          beneficiario.telefone,
+          "telefone"
+        )}</span></div>
+        <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-value">${
+          beneficiario.email || "N/A"
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">Endereço:</span><span class="detail-value">${
+          beneficiario.endereco
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">Área Cultivada (ha):</span><span class="detail-value">${maskData(
+          beneficiario.area_cultivada,
+          "area_cultivada"
+        )}</span></div>
+        <div class="detail-row"><span class="detail-label">Famílias:</span><span class="detail-value">${
+          beneficiario.pessoas_familia
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">Culturas:</span><span class="detail-value">${(
+          beneficiario.culturas || []
+        ).join(", ")}</span></div>
+        <div class="detail-row"><span class="detail-label">Cadastrado por:</span><span class="detail-value">${
+          beneficiario.cadastrado_por
+        }</span></div>
+        <div class="detail-row"><span class="detail-label">Data Cadastro:</span><span class="detail-value">${formatDate(
+          beneficiario.data_cadastro
+        )}</span></div>
+    `;
+
+  modal.classList.remove("hidden");
 };
 
 const initModal = () => {
@@ -554,55 +639,62 @@ const initCadastroForm = () => {
 
   document.querySelectorAll('input[name="culturas"]').forEach((cb) => {
     cb.addEventListener("change", () => {
-      const fieldId = `variedades-${cb.value.toLowerCase().replace(/ /g, "-")}`;
+      const fieldId = `variedades-${cb.value
+        .toLowerCase()
+        .replace(/ |-/g, "")}`;
       document.getElementById(fieldId).classList.toggle("hidden", !cb.checked);
     });
   });
 
-  document.getElementById("cadastro-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const newBeneficiario = {
-      id: (beneficiarios[beneficiarios.length - 1]?.id || 0) + 1,
-      nome: form.nome.value,
-      cpf: form.documento.value,
-      telefone: form.telefone.value,
-      email: form.email.value,
-      tipo: form.tipo.value,
-      endereco: form.endereco.value,
-      latitude: form.latitude.value,
-      longitude: form.longitude.value,
-      area_cultivada: parseFloat(form.area_cultivada.value) || 0,
-      pessoas_familia: parseInt(form.pessoas_familia.value) || 0,
-      culturas: [
-        ...form.querySelectorAll('input[name="culturas"]:checked'),
-      ].map((cb) => cb.value),
-      variedades: {},
-      acesso_agua: form.acesso_agua.value,
-      outros_programas: form.outros_programas.value,
-      observacoes: form.observacoes.value,
-      data_cadastro: new Date().toISOString().split("T")[0],
-      cadastrado_por: currentUser.username,
-    };
+  document
+    .getElementById("cadastro-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const newBeneficiarioData = {
+        nome: form.nome.value,
+        cpf: form.documento.value,
+        telefone: form.telefone.value,
+        email: form.email.value,
+        tipo: form.tipo.value,
+        endereco: form.endereco.value,
+        latitude: form.latitude.value,
+        longitude: form.longitude.value,
+        area_cultivada: parseFloat(form.area_cultivada.value) || 0,
+        pessoas_familia: parseInt(form.pessoas_familia.value) || 0,
+        culturas: [
+          ...form.querySelectorAll('input[name="culturas"]:checked'),
+        ].map((cb) => cb.value),
+        variedades: {},
+        acesso_agua: form.acesso_agua.value,
+        outros_programas: form.outros_programas.value,
+        observacoes: form.observacoes.value,
+        data_cadastro: new Date().toISOString().split("T")[0],
+        cadastrado_por: currentUser.username,
+      };
 
-    newBeneficiario.culturas.forEach((cultura) => {
-      const inputId = `variedades-input-${cultura
-        .toLowerCase()
-        .replace(/ /g, "-")}`;
-      newBeneficiario.variedades[cultura] =
-        document.getElementById(inputId).value;
+      newBeneficiarioData.culturas.forEach((cultura) => {
+        const inputId = `variedades-input-${cultura
+          .toLowerCase()
+          .replace(/ |-/g, "")}`;
+        newBeneficiarioData.variedades[cultura] =
+          document.getElementById(inputId).value;
+      });
+
+      try {
+        await db.collection("beneficiarios").add(newBeneficiarioData);
+        logAction("Novo cadastro", `Beneficiário: ${newBeneficiarioData.nome}`);
+        showToast("Cadastro salvo com sucesso na nuvem!");
+        form.reset();
+        document
+          .querySelectorAll(".variety-field")
+          .forEach((el) => el.classList.add("hidden"));
+        updateRecentCadastros(); // A atualização será automática pelo onSnapshot
+      } catch (error) {
+        console.error("Erro ao adicionar documento: ", error);
+        showToast("Falha ao salvar o cadastro. Tente novamente.", "error");
+      }
     });
-
-    beneficiarios.push(newBeneficiario);
-    saveDataToLocalStorage(); // --- SALVAR DADOS ---
-    logAction("Novo cadastro", `Beneficiário: ${newBeneficiario.nome}`);
-    showToast("Cadastro salvo com sucesso!");
-    form.reset();
-    document
-      .querySelectorAll(".variety-field")
-      .forEach((el) => el.classList.add("hidden"));
-    updateRecentCadastros();
-  });
   updateRecentCadastros();
 };
 
@@ -638,35 +730,45 @@ const initDonationForm = () => {
     cb.addEventListener("change", updateDonationItems);
   });
 
-  document.getElementById("donation-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const newDonation = {
-      id: (donations[donations.length - 1]?.id || 0) + 1,
-      beneficiaryId: parseInt(form["beneficiary-select"].value),
-      types: [
-        ...form.querySelectorAll('input[name="donation-type"]:checked'),
-      ].map((el) => el.value),
-      items: [
-        ...form.querySelectorAll('input[name="donation-item"]:checked'),
-      ].map((el) => el.value),
-      quantity: parseFloat(form.quantity.value),
-      date: new Date().toISOString().split("T")[0],
-      registeredBy: currentUser.username,
-    };
-    donations.push(newDonation);
-    saveDataToLocalStorage(); // --- SALVAR DADOS ---
-    logAction(
-      "Nova doação",
-      `Beneficiário ID: ${
-        newDonation.beneficiaryId
-      }, Itens: ${newDonation.items.join(", ")}`
-    );
-    showToast("Doação registrada com sucesso!");
-    form.reset();
-    document.getElementById("donation-items").classList.add("hidden");
-    updateRecentDonations();
-  });
+  document
+    .getElementById("donation-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const beneficiaryId = form["beneficiary-select"].value;
+      const beneficiaryName =
+        form["beneficiary-select"].options[
+          form["beneficiary-select"].selectedIndex
+        ].text;
+
+      const newDonationData = {
+        beneficiaryId: beneficiaryId,
+        beneficiaryName: beneficiaryName,
+        types: [
+          ...form.querySelectorAll('input[name="donation-type"]:checked'),
+        ].map((el) => el.value),
+        items: [
+          ...form.querySelectorAll('input[name="donation-item"]:checked'),
+        ].map((el) => el.value),
+        quantity: parseFloat(form.quantity.value),
+        date: new Date().toISOString().split("T")[0],
+        registeredBy: currentUser.username,
+      };
+
+      try {
+        await db.collection("donations").add(newDonationData);
+        logAction(
+          "Nova doação",
+          `Beneficiário: ${newDonationData.beneficiaryName}`
+        );
+        showToast("Doação registrada com sucesso na nuvem!");
+        form.reset();
+        document.getElementById("donation-items").classList.add("hidden");
+      } catch (error) {
+        console.error("Erro ao adicionar doação: ", error);
+        showToast("Falha ao registrar a doação. Tente novamente.", "error");
+      }
+    });
   updateRecentDonations();
 };
 
@@ -707,13 +809,12 @@ const updateRecentDonations = () => {
   if (!tableBody) return;
   tableBody.innerHTML = "";
   [...donations]
-    .reverse()
-    .slice(0, 5)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10)
     .forEach((d) => {
-      const beneficiary = beneficiarios.find((b) => b.id === d.beneficiaryId);
       const row = tableBody.insertRow();
       row.innerHTML = `
-      <td>${beneficiary ? beneficiary.nome : "N/A"}</td>
+      <td>${d.beneficiaryName || "N/A"}</td>
       <td>${d.items.join(", ")}</td>
       <td>${d.quantity}</td>
       <td>${formatDate(d.date)}</td>
@@ -723,10 +824,14 @@ const updateRecentDonations = () => {
 
 // Relatórios
 const updateReports = () => {
+  if (window.stateChart instanceof Chart) window.stateChart.destroy();
+  if (window.incomeChart instanceof Chart) window.incomeChart.destroy();
+  if (window.varietiesChart instanceof Chart) window.varietiesChart.destroy();
+
   createStateChart();
   if (currentUser.role === "administrador") createIncomeChart();
   createVarietiesChart();
-  updateStatsRummary();
+  updateStatsSummary();
 };
 
 const createStateChart = () => {
@@ -737,7 +842,7 @@ const createStateChart = () => {
     const estado = getEstadoFromAddress(b.endereco);
     stateCounts[estado] = (stateCounts[estado] || 0) + 1;
   });
-  new Chart(ctx, {
+  window.stateChart = new Chart(ctx, {
     type: "doughnut",
     data: {
       labels: Object.keys(stateCounts),
@@ -771,9 +876,10 @@ const createIncomeChart = () => {
   if (!ctx) return;
   const incomeCounts = {};
   beneficiarios.forEach((b) => {
-    incomeCounts[b.renda] = (incomeCounts[b.renda] || 0) + 1;
+    const renda = b.renda || "N/A";
+    incomeCounts[renda] = (incomeCounts[renda] || 0) + 1;
   });
-  new Chart(ctx, {
+  window.incomeChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: Object.keys(incomeCounts),
@@ -802,12 +908,14 @@ const createVarietiesChart = () => {
   beneficiarios.forEach((b) => {
     if (b.variedades) {
       Object.entries(b.variedades).forEach(([cultura, variedades]) => {
-        const count = variedades.split(",").length;
-        varietiesCounts[cultura] = (varietiesCounts[cultura] || 0) + count;
+        if (variedades && typeof variedades === "string") {
+          const count = variedades.split(",").length;
+          varietiesCounts[cultura] = (varietiesCounts[cultura] || 0) + count;
+        }
       });
     }
   });
-  new Chart(ctx, {
+  window.varietiesChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: Object.keys(varietiesCounts),
@@ -829,7 +937,7 @@ const createVarietiesChart = () => {
   });
 };
 
-const updateStatsRummary = () => {
+const updateStatsSummary = () => {
   const statsContainer = document.getElementById("stats-summary");
   if (!statsContainer) return;
   const totalArea = beneficiarios.reduce(
@@ -846,9 +954,11 @@ const updateStatsRummary = () => {
   beneficiarios.forEach((b) => {
     if (b.variedades) {
       Object.values(b.variedades).forEach((varieties) => {
-        varieties
-          .split(",")
-          .forEach((variety) => allVarieties.add(variety.trim()));
+        if (variedades && typeof variedades === "string") {
+          variedades
+            .split(",")
+            .forEach((variety) => allVarieties.add(variety.trim()));
+        }
       });
     }
   });
@@ -874,7 +984,7 @@ const updateStatsRummary = () => {
 // Gestão de Usuários
 const updateUserManagement = () => {
   if (currentUser.role !== "administrador") return;
-  // Lógica de gestão de usuários aqui...
+  // Lógica de gestão de usuários aqui
 };
 
 // Inicialização
@@ -883,6 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
   initModal();
   initTableFilters();
+  loadDataFromFirestore(); // Carrega os dados e começa a escutar por mudanças
   showScreen("login");
 });
 
